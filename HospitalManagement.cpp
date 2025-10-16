@@ -34,13 +34,17 @@ class HospitalManagement {
         void undoLastAdmission(){
 
         }
-        
         void displayChoices(){
-
+            cout << "1. Manage Doctors" << endl;
+            cout << "2. Admit Patients" << endl;
+            cout << "3. Undo Last Admission" << endl;
+            cout << "4. Exit" << endl;
         }
 };
 
 int main(){
-
+    HospitalManagement hm;
+    int choice;
+    
     return 0;
 }
