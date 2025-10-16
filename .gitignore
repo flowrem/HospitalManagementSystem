@@ -1,0 +1,27 @@
+# Build directories
+build/
+Debug/
+Release/
+*.exe
+*.out
+*.o
+*.obj
+
+# VS Code settings (optional - remove if you want to share)
+.vscode/
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
