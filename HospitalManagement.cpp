@@ -8,6 +8,7 @@ public:
 	int id;
     Node* next;
     Node* prev;
+    int assignedDoctorID = -1; // -1 indicates no doctor assigned
 
     Node(string patientName, int patientID) {
         name = patientName;
@@ -38,6 +39,7 @@ public:
 
     Doctor doctors[10];
     int doctorCount = 0;
+    int patientCount = 0;
 
     void manageDoctors() {
         int n = 0;
@@ -136,14 +138,14 @@ public:
         cout << "Current Doctors List:" << endl;
 
         	if (doctorCount == 0) {
-            cout << "No doctors available." << endl;
-            return;
+                cout << "No doctors available." << endl;
+                return;
         	}
 
         	for (int i = 0; i < doctorCount; i++) {
-            cout << "Doctor " << i + 1 << ": "
-                 << "Name: " << doctors[i].name 
-                 << ", ID: " << doctors[i].id << endl;
+                cout << "Doctor " << i + 1 << ": "
+                    << "Name: " << doctors[i].name 
+                    << ", ID: " << doctors[i].id << endl;
         	}
     	break;
 
@@ -162,9 +164,11 @@ public:
     	do {
         	cout << "\n=== Manage Patients ===" << endl;
         	cout << "1. Add Patient" << endl;
-        	cout << "2. View Patients" << endl;
-        	cout << "3. Manage Waiting Queue" << endl;
-        	cout << "4. Back to Main Menu" << endl;
+            cout << "2. Remove Patient" << endl;
+        	cout << "3. View Patients" << endl;
+        	cout << "4. Manage Waiting Queue" << endl;
+        	cout << "5. Assign Doctor to Patient" << endl;
+            cout << "6. Back to Main Menu" << endl;         	           
         	cout << "Enter your choice: ";
         	cin >> choice;
         	cout << endl;
@@ -174,20 +178,31 @@ public:
             		addPatient();
             		break;
         		case 2:
-            		viewPatientHistory();
+            		removePatient();
             		break;
         		case 3:
-            		manageWaitingQueue();
+            	    viewPatientHistory();
             		break;
         		case 4:
-            		cout << "Returning to main menu..." << endl;
+            		manageWaitingQueue();
             		break;
+                case 5:
+                    assignDoctorToPatient();
+                    break;
+                case 6:
+                    cout << "Returning to main menu..." << endl;
+                    break;
         	default:
             	cout << "Invalid choice. Try again." << endl;
         	}
-    	} while (choice != 4);
-	}	
-	
+    	} while (choice != 6);
+	}
+
+	void removePatient(){
+        cout << "Remove Patient is not yet implemented";
+        return;
+    }
+
 	void addPatient(){
 		
 		string patientName;
@@ -215,15 +230,16 @@ public:
 		} while(idTaken);
 		
 		Node* newPatient = new Node(patientName, patientID);
-		if(head == nullptr){
-			head = tail = newPatient; // check if the list is empty, if yes sets head and tail to newPatient
-		}
-		else{
-			tail->next = newPatient;
-			newPatient->prev = tail;
-			tail = newPatient;
-		}
-		cout << "\nPatient: " << patientName << " ID: " << patientID << " has been added successfully!" << endl;
+            if(head == nullptr){
+                head = tail = newPatient; // check if the list is empty, if yes sets head and tail to newPatient
+            }
+            else{
+                tail->next = newPatient;
+                newPatient->prev = tail;
+                tail = newPatient;
+            }
+            cout << "\nPatient: " << patientName << " ID: " << patientID << " has been added successfully!" << endl;
+            patientCount++;
 	}
 
 	void viewPatientHistory(){
@@ -237,12 +253,12 @@ public:
 		bool repeat = true;
 		
 		while(repeat){
-		cout << "\n=== View Patient History ===\n";
-		cout << "1. View from first to last (Forward)\n";
-    	cout << "2. View from last to first (Backward)\n";
-    	cout << "3. Back \n";
-		cout << "Enter your choice: ";
-		cin >> choice;
+            cout << "\n=== View Patient History ===\n";
+            cout << "1. View from first to last (Forward)\n";
+            cout << "2. View from last to first (Backward)\n";
+            cout << "3. Back \n";
+            cout << "Enter your choice: ";
+            cin >> choice;
 		
 		
 		if(choice == 1){
@@ -272,15 +288,76 @@ public:
 	}
 
 	void manageWaitingQueue(){
-		cout << "Manage Waiting Queue is not yet implemented";
-		return;
+        int choice;
+        do {
+            cout << "\n=== Manage Waiting Queue ===" << endl;
+            cout << "1. Add Patient to Waiting Queue\n";
+            cout << "2. Call Next Patient\n";
+            cout << "3. View All Waiting Patients\n";
+            cout << "4. Check Queue Status\n";
+            cout << "5. Back to Manage Patients\n";
+            cout << "Enter your choice: ";
+            cin >> choice;
+
+            switch (choice) {
+                case 1:
+                    addToWaitingQueue();
+                    break;
+                case 2:
+                    callNextPatient();
+                    break;
+                case 3:
+                    viewWaitingQueue();
+                    break;
+                case 4:
+                    checkQueueStatus();
+                    break;
+                case 5:
+                    cout << "Returning to main menu..." << endl;
+                    break;
+                default:
+                    cout << "Invalid choice. Please try again." << endl;
+                    break;
+                }
+            } while (choice != 5);
+
 	}
-
-
+    void assignDoctorToPatient(){
+       if (doctorCount == 0) {
+           cout << "No doctors available to assign." << endl;
+           return;
+       }
+       if(patientCount == 0){
+           cout << "No patients available to assign." << endl;
+           return;
+       }
+       // Logic to assign a doctor to a patient
+       
+    }
 	void displayChoices() {
         cout << "1. Manage Doctors" << endl;
         cout << "2. Manage Patient" << endl;
         cout << "3. Exit" << endl;
+    }
+    void undoLastAdmission() {
+        cout << "Undo Last Admission is not yet implemented";
+        return;
+    }
+    void addToWaitingQueue() {
+        cout << "Add to Waiting Queue is not yet implemented";
+        return;
+    }
+    void callNextPatient() {
+        cout << "Call Next Patient is not yet implemented";
+        return;
+    }
+    void viewWaitingQueue() {
+        cout << "View Waiting Queue is not yet implemented";
+        return;
+    }
+    void checkQueueStatus() {
+        cout << "Check Queue Status is not yet implemented";
+        return;
     }
 };
 
@@ -297,21 +374,18 @@ int main() {
         cin >> choice;
 		cout << endl;
         switch (choice) {
-        case 1:
-            hm.manageDoctors();
-            break;
-        case 2:
-            hm.managePatient();
-            break;
-        /*case 3:
-            hm.undoLastAdmission();
-            break;*/
-        case 3:
-            stop = true;
-            break;
-        default:
-            cout << "Invalid choice. Please try again." << endl;
-        }
+            case 1:
+                hm.manageDoctors();
+                break;
+            case 2:
+                hm.managePatient();
+                break;
+            case 3:
+                stop = true;
+                break;
+            default:
+                cout << "Invalid choice. Please try again." << endl;
+            }
     }
 
     cout << "Exiting system. Goodbye!" << endl;
