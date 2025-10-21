@@ -23,6 +23,7 @@ class HospitalManagement {
     Node* tail;
     Node* waitingHead;
     Node* waitingTail;
+    Node* stackTop;  
 
 public:
     HospitalManagement() {
@@ -30,6 +31,7 @@ public:
         tail = nullptr;
         waitingHead = nullptr;
         waitingTail = nullptr;
+        stackTop = nullptr;  
     }
 
     struct Doctor {
@@ -231,13 +233,17 @@ public:
 		
 		Node* newPatient = new Node(patientName, patientID);
             if(head == nullptr){
-                head = tail = newPatient; // check if the list is empty, if yes sets head and tail to newPatient
+                head = tail = newPatient; 
             }
             else{
                 tail->next = newPatient;
                 newPatient->prev = tail;
                 tail = newPatient;
             }
+            
+            // Push to undo stack
+            pushToStack(patientName, patientID);
+            
             cout << "\nPatient: " << patientName << " ID: " << patientID << " has been added successfully!" << endl;
             patientCount++;
 	}
@@ -334,13 +340,82 @@ public:
        // Logic to assign a doctor to a patient
        
     }
+    
+    // Push patient to undo stack
+    void pushToStack(string patientName, int patientID) {
+        Node* newNode = new Node(patientName, patientID);
+        newNode->next = stackTop;  // Link to previous top
+        stackTop = newNode;         // Update top
+    }
+    
+    // Pop patient from undo stack
+    Node* popFromStack() {
+        if (stackTop == nullptr) {
+            return nullptr;  
+        }
+        Node* temp = stackTop;
+        stackTop = stackTop->next;  
+        return temp;
+    }
+    
 	void displayChoices() {
         cout << "1. Manage Doctors" << endl;
         cout << "2. Manage Patient" << endl;
-        cout << "3. Exit" << endl;
+        cout << "3. Undo Last Admission" << endl;
+        cout << "4. Exit" << endl;
     }
     void undoLastAdmission() {
-        cout << "Undo Last Admission is not yet implemented";
+        if (stackTop == nullptr) {
+            cout << "No admissions to undo!" << endl;
+            return;
+        }
+        
+        // Pop from stack to get last admitted patient
+        Node* lastAdmitted = popFromStack();
+        int patientID = lastAdmitted->id;
+        string patientName = lastAdmitted->name;
+        
+        // Remove from main patient list
+        Node* current = head;
+        bool found = false;
+        
+        while (current != nullptr) {
+            if (current->id == patientID) {
+                found = true;
+                
+                // Handle removal from doubly linked list
+                if (current == head && current == tail) {
+                    // Only one node
+                    head = tail = nullptr;
+                } else if (current == head) {
+                    // Remove from head
+                    head = head->next;
+                    head->prev = nullptr;
+                } else if (current == tail) {
+                    // Remove from tail
+                    tail = tail->prev;
+                    tail->next = nullptr;
+                } else {
+                    // Remove from middle
+                    current->prev->next = current->next;
+                    current->next->prev = current->prev;
+                }
+                
+                delete current;
+                patientCount--;
+                cout << "\nSuccessfully undid admission of Patient: " 
+                     << patientName << " (ID: " << patientID << ")" << endl;
+                break;
+            }
+            current = current->next;
+        }
+        
+        if (!found) {
+            cout << "Patient was already removed manually." << endl;
+        }
+        
+        // Clean up the stack node
+        delete lastAdmitted;
         return;
     }
     void addToWaitingQueue() {
@@ -381,6 +456,9 @@ int main() {
                 hm.managePatient();
                 break;
             case 3:
+                hm.undoLastAdmission();
+                break;
+            case 4:
                 stop = true;
                 break;
             default:
