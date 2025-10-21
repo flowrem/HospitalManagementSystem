@@ -52,7 +52,8 @@ public:
         cout << "1. Add Doctors" << endl;
         cout << "2. Remove Doctors" << endl;
         cout << "3. View Doctors" << endl;
-        cout << "4. Back to Main Menu" << endl;
+        cout << "4. Assign Doctor to Patient" << endl;
+        cout << "5. Back to Main Menu" << endl;
 
         cout << "Enter your choice: ";
         cin >> choice;
@@ -97,8 +98,6 @@ public:
 				doctorCount++;
 				cout << "Doctors added successfully." << endl;
             }
-
-            
 			cout << "\n=== Current Doctors List ===" << endl;
             for (int i = 0; i < doctorCount; i++) {
                 cout << "Doctor " << i + 1 << ": " 
@@ -152,7 +151,7 @@ public:
     	break;
 
         case 4:
-            cout << "Returning to Main Menu." << endl;
+            assignDoctorToPatient();
             break;
 
         default:
@@ -166,11 +165,11 @@ public:
     	do {
         	cout << "\n=== Manage Patients ===" << endl;
         	cout << "1. Add Patient" << endl;
-            cout << "2. Remove Patient" << endl;
-        	cout << "3. View Patients" << endl;
-        	cout << "4. Manage Waiting Queue" << endl;
-        	cout << "5. Assign Doctor to Patient" << endl;
-            cout << "6. Back to Main Menu" << endl;         	           
+        	cout << "2. View Patient History" << endl;
+        	cout << "3. Manage Waiting Queue" << endl;
+        	cout << "4. Assign Doctor to Patient" << endl;
+            cout << "5. Undo Last Admission"<< endl;
+            cout << "6. Back to Main Menu" << endl;     	           
         	cout << "Enter your choice: ";
         	cin >> choice;
         	cout << endl;
@@ -180,33 +179,28 @@ public:
             		addPatient();
             		break;
         		case 2:
-            		removePatient();
+            		viewPatientHistory();  
             		break;
         		case 3:
-            	    viewPatientHistory();
-            		break;
-        		case 4:
             		manageWaitingQueue();
             		break;
-                case 5:
+                case 4:
                     assignDoctorToPatient();
+                    break;
+                case 5:
+                    undoLastAdmission();
                     break;
                 case 6:
                     cout << "Returning to main menu..." << endl;
                     break;
-        	default:
-            	cout << "Invalid choice. Try again." << endl;
+        	    default:
+            	    cout << "Invalid choice. Try again." << endl;
         	}
     	} while (choice != 6);
 	}
 
-	void removePatient(){
-        cout << "Remove Patient is not yet implemented";
-        return;
-    }
 
 	void addPatient(){
-		
 		string patientName;
 		int patientID;
 		bool idTaken;
@@ -244,7 +238,7 @@ public:
             // Push to undo stack
             pushToStack(patientName, patientID);
             
-            cout << "\nPatient: " << patientName << " ID: " << patientID << " has been added successfully!" << endl;
+            cout << "\nPatient: " << patientName << " with ID: " << patientID << " has been added successfully!" << endl;
             patientCount++;
 	}
 
@@ -268,7 +262,7 @@ public:
 		
 		
 		if(choice == 1){
-			cout << "Patient List (Olders -> Newest): \n";
+			cout << "Patient List (Oldest -> Newest): \n";
 				Node* current = head;
 				while(current != nullptr){
 					cout<< "Name: " << current->name << " ID: " << current->id << endl;
@@ -361,15 +355,13 @@ public:
 	void displayChoices() {
         cout << "1. Manage Doctors" << endl;
         cout << "2. Manage Patient" << endl;
-        cout << "3. Undo Last Admission" << endl;
-        cout << "4. Exit" << endl;
+        cout << "3. Exit" << endl;
     }
     void undoLastAdmission() {
         if (stackTop == nullptr) {
             cout << "No admissions to undo!" << endl;
             return;
         }
-        
         // Pop from stack to get last admitted patient
         Node* lastAdmitted = popFromStack();
         int patientID = lastAdmitted->id;
@@ -382,10 +374,8 @@ public:
         while (current != nullptr) {
             if (current->id == patientID) {
                 found = true;
-                
                 // Handle removal from doubly linked list
                 if (current == head && current == tail) {
-                    // Only one node
                     head = tail = nullptr;
                 } else if (current == head) {
                     // Remove from head
@@ -404,7 +394,7 @@ public:
                 delete current;
                 patientCount--;
                 cout << "\nSuccessfully undid admission of Patient: " 
-                     << patientName << " (ID: " << patientID << ")" << endl;
+                     << patientName << " with ID: " << patientID << endl;
                 break;
             }
             current = current->next;
@@ -456,9 +446,6 @@ int main() {
                 hm.managePatient();
                 break;
             case 3:
-                hm.undoLastAdmission();
-                break;
-            case 4:
                 stop = true;
                 break;
             default:
