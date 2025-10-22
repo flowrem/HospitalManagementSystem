@@ -8,13 +8,14 @@ public:
 	int id;
     Node* next;
     Node* prev;
-    int assignedDoctorID = -1; // -1 indicates no doctor assigned
-
+    int assignedDoctorID;  
+ 
     Node(string patientName, int patientID) {
         name = patientName;
         id = patientID;
         next = nullptr;
         prev = nullptr;
+        assignedDoctorID = -1;  // -1 means no doctor assigned
     }
 };
 
@@ -42,11 +43,10 @@ public:
     Doctor doctors[10];
     int doctorCount = 0;
     int patientCount = 0;
+    bool isDoctorAssigned = false;
 
     void manageDoctors() {
-        int n = 0;
         int choice;
-        int valueToRemove;
 
         cout << "Manage Doctors" << endl;
         cout << "1. Add Doctors" << endl;
@@ -61,8 +61,29 @@ public:
 		
         switch (choice) {
         case 1:
-            cout << "Enter number of doctors to add: ";
-            cin >> n;
+            addDoctor();
+            break;
+
+        case 2:
+            removeDoctor();
+            break;
+            
+        case 3:
+            viewDoctors();
+    	    break;
+        case 4:
+            assignDoctorToPatient();
+            break;
+
+        default:
+            cout << "Invalid choice. Returning to Main Menu." << endl;
+            break;
+        }
+    }
+    void addDoctor(){
+        int n = 0;
+        cout << "Enter number of doctors to add: ";
+        cin >> n;
             if (n > 10) {
                 cout << "You can only add up to 10 Doctors." << endl;
                 n = 10;
@@ -104,15 +125,15 @@ public:
                      << "Name: " << doctors[i].name 
                      << ", ID: " << doctors[i].id << endl;
             }
-            break;
-
-        case 2:
-            cout << "Enter ID of doctor to remove: ";
+    }
+    void removeDoctor(){
+        int valueToRemove;
+        cout << "Enter ID of doctor to remove: ";
             cin >> valueToRemove;
 
             if (doctorCount == 0) {
                 cout << "No doctors to remove." << endl;
-                break;
+                return;
             }
 
             {
@@ -126,16 +147,15 @@ public:
                         }
                         doctorCount--;
                         cout << "Doctor with ID " << valueToRemove << " removed successfully." << endl;
-                        break;
+                        return;
                     }
                 }
                 if (!found) {
                     cout << "Doctor with ID " << valueToRemove << " not found." << endl;
                 }
             }
-            break;
-            
-        case 3:
+    }
+    void viewDoctors(){
         cout << "Current Doctors List:" << endl;
 
         	if (doctorCount == 0) {
@@ -147,29 +167,19 @@ public:
                 cout << "Doctor " << i + 1 << ": "
                     << "Name: " << doctors[i].name 
                     << ", ID: " << doctors[i].id << endl;
-        	}
-    	break;
-
-        case 4:
-            assignDoctorToPatient();
-            break;
-
-        default:
-            cout << "Invalid choice. Returning to Main Menu." << endl;
-            break;
-        }
+            }
     }
-
 	void managePatient() {
     	int choice;
     	do {
         	cout << "\n=== Manage Patients ===" << endl;
         	cout << "1. Add Patient" << endl;
-        	cout << "2. View Patient History" << endl;
-        	cout << "3. Manage Waiting Queue" << endl;
-        	cout << "4. Assign Doctor to Patient" << endl;
-            cout << "5. Undo Last Admission"<< endl;
-            cout << "6. Back to Main Menu" << endl;     	           
+        	cout << "2. Remove Patient" << endl;
+        	cout << "3. View Patient History" << endl;
+        	cout << "4. View Patients with Assigned Doctors" << endl;
+        	cout << "5. Assign Doctor to Patient" << endl;
+            cout << "6. Undo Last Admission"<< endl;
+            cout << "7. Back to Main Menu" << endl;
         	cout << "Enter your choice: ";
         	cin >> choice;
         	cout << endl;
@@ -179,24 +189,27 @@ public:
             		addPatient();
             		break;
         		case 2:
-            		viewPatientHistory();  
+            		removePatient();
             		break;
         		case 3:
-            		manageWaitingQueue();
+            		viewPatientHistory();  
             		break;
                 case 4:
-                    assignDoctorToPatient();
+                    displayPatientsWithDoctors();
                     break;
                 case 5:
-                    undoLastAdmission();
+                    assignDoctorToPatient();
                     break;
                 case 6:
+                    undoLastAdmission();
+                    break;
+                case 7:
                     cout << "Returning to main menu..." << endl;
                     break;
         	    default:
             	    cout << "Invalid choice. Try again." << endl;
         	}
-    	} while (choice != 6);
+    	} while (choice != 7);
 	}
 
 
@@ -287,42 +300,71 @@ public:
 		} 
 	}
 
-	void manageWaitingQueue(){
-        int choice;
-        do {
-            cout << "\n=== Manage Waiting Queue ===" << endl;
-            cout << "1. Add Patient to Waiting Queue\n";
-            cout << "2. Call Next Patient\n";
-            cout << "3. View All Waiting Patients\n";
-            cout << "4. Check Queue Status\n";
-            cout << "5. Back to Manage Patients\n";
-            cout << "Enter your choice: ";
-            cin >> choice;
-
-            switch (choice) {
-                case 1:
-                    addToWaitingQueue();
-                    break;
-                case 2:
-                    callNextPatient();
-                    break;
-                case 3:
-                    viewWaitingQueue();
-                    break;
-                case 4:
-                    checkQueueStatus();
-                    break;
-                case 5:
-                    cout << "Returning to main menu..." << endl;
-                    break;
-                default:
-                    cout << "Invalid choice. Please try again." << endl;
-                    break;
+    void displayPatientsWithDoctors() {
+        // Temporary queue for patients with assigned doctors
+        Node* queueFront = nullptr;
+        Node* queueRear = nullptr;
+        
+        // Traverse patient list and enqueue patients with assigned doctors
+        Node* current = head;
+        int count = 0;
+        
+        while(current != nullptr) {
+            if(current->assignedDoctorID != -1) {
+                // Create copy for queue
+                Node* queueNode = new Node(current->name, current->id);
+                queueNode->assignedDoctorID = current->assignedDoctorID;
+                
+                // Enqueue (add to rear)
+                if(queueFront == nullptr) {
+                    queueFront = queueRear = queueNode;
+                } else {
+                    queueRear->next = queueNode;
+                    queueRear = queueNode;
                 }
-            } while (choice != 5);
+                count++;
+            }
+            current = current->next;
+        }
+        
+        // Display queue
+        if(queueFront == nullptr) {
+            cout << "\nNo patients have assigned doctors yet." << endl;
+        } else {
+            cout << "\n=== Patients with Assigned Doctors ===" << endl;
+            cout << "Total: " << count << " patient(s)\n" << endl;
+            
+            Node* temp = queueFront;
+            int position = 1;
+            
+            while(temp != nullptr) {
+                cout << position << ". Patient: " << temp->name 
+                     << " (ID: " << temp->id << ")";
+                
+                // Find and display doctor name
+                for(int i = 0; i < doctorCount; i++) {
+                    if(doctors[i].id == temp->assignedDoctorID) {
+                        cout << "-> Assigned to Dr. " << doctors[i].name 
+                             << " (ID: " << doctors[i].id << ")";
+                        break;
+                    }
+                }
+                cout << endl;
+                temp = temp->next;
+                position++;
+            }
+        }
+        
+        // Clean up temporary queue 
+        while(queueFront != nullptr) {
+            Node* temp = queueFront;
+            queueFront = queueFront->next;
+            delete temp;
+        }
+    }
 
-	}
     void assignDoctorToPatient(){
+        
        if (doctorCount == 0) {
            cout << "No doctors available to assign." << endl;
            return;
@@ -331,8 +373,85 @@ public:
            cout << "No patients available to assign." << endl;
            return;
        }
-       // Logic to assign a doctor to a patient
        
+       // Display all patients
+       cout << "\n=== Available Patients ===" << endl;
+       Node* current = head;
+       while(current != nullptr){
+           cout << "Patient ID: " << current->id 
+                << ", Name: " << current->name;
+           
+           // Show if doctor is already assigned
+           if(current->assignedDoctorID != -1){
+               // Find doctor name
+               for(int i = 0; i < doctorCount; i++){
+                   if(doctors[i].id == current->assignedDoctorID){
+                       cout << " (Assigned to Dr. " << doctors[i].name << ")";
+                       break;
+                   }
+               }
+           } else {
+               cout << " (No doctor assigned)";
+           }
+           cout << endl;
+           current = current->next;
+       }
+       
+       // Get patient ID
+       int patientID;
+       cout << "\nEnter Patient ID to assign doctor: ";
+       cin >> patientID;
+       
+       // Find patient
+       current = head;
+       Node* targetPatient = nullptr;
+       while(current != nullptr){
+           if(current->id == patientID){
+               targetPatient = current;
+               break;
+           }
+           current = current->next;
+       }
+       
+       if(targetPatient == nullptr){
+           cout << "Patient with ID " << patientID << " not found." << endl;
+           return;
+       }
+       
+       // Display all doctors
+       cout << "\n=== Available Doctors ===" << endl;
+       for(int i = 0; i < doctorCount; i++){
+           cout << "Doctor ID: " << doctors[i].id 
+                << ", Name: " << doctors[i].name << endl;
+       }
+       
+       // Get doctor ID
+       int doctorID;
+       cout << "\nEnter Doctor ID to assign: ";
+       cin >> doctorID;
+       
+       // Find doctor
+       bool doctorFound = false;
+       int doctorIndex = -1;
+       for(int i = 0; i < doctorCount; i++){
+           if(doctors[i].id == doctorID){
+               doctorFound = true;
+               doctorIndex = i;
+               break;
+           }
+       }
+       
+       if(!doctorFound){
+           cout << "Doctor with ID " << doctorID << " not found." << endl;
+           return;
+       }
+       
+       // Assign doctor to patient
+       targetPatient->assignedDoctorID = doctorID;
+       
+       cout << "\nSuccessfully assigned Dr. " << doctors[doctorIndex].name 
+            << " (ID: " << doctorID << ") to Patient " << targetPatient->name 
+            << " (ID: " << patientID << ")" << endl;
     }
     
     // Push patient to undo stack
@@ -362,7 +481,6 @@ public:
             cout << "No admissions to undo!" << endl;
             return;
         }
-        // Pop from stack to get last admitted patient
         Node* lastAdmitted = popFromStack();
         int patientID = lastAdmitted->id;
         string patientName = lastAdmitted->name;
@@ -378,19 +496,15 @@ public:
                 if (current == head && current == tail) {
                     head = tail = nullptr;
                 } else if (current == head) {
-                    // Remove from head
                     head = head->next;
                     head->prev = nullptr;
                 } else if (current == tail) {
-                    // Remove from tail
                     tail = tail->prev;
                     tail->next = nullptr;
                 } else {
-                    // Remove from middle
                     current->prev->next = current->next;
                     current->next->prev = current->prev;
                 }
-                
                 delete current;
                 patientCount--;
                 cout << "\nSuccessfully undid admission of Patient: " 
@@ -408,22 +522,45 @@ public:
         delete lastAdmitted;
         return;
     }
-    void addToWaitingQueue() {
-        cout << "Add to Waiting Queue is not yet implemented";
-        return;
+
+    void removePatient() {
+        if (head == nullptr) {
+            cout << "No patients to remove." << endl;
+            return;
+        }
+
+        viewPatientHistory();
+        
+        int patientID;
+        Node* current = head;
+        cout << "Enter the Patient ID to remove: ";
+        cin >> patientID;
+
+        while (current != nullptr) {
+            if (current->id == patientID) {
+                // Handle removal from doubly linked list
+                if (current == head && current == tail) {
+                    head = tail = nullptr;
+                } else if (current == head) {
+                    head = head->next;
+                    head->prev = nullptr;
+                } else if (current == tail) {
+                    tail = tail->prev;
+                    tail->next = nullptr;
+                } else {
+                    current->prev->next = current->next;
+                    current->next->prev = current->prev;
+                }
+                delete current;
+                patientCount--;
+                cout << "Patient with ID " << patientID << " removed successfully." << endl;
+                return;
+            }
+            current = current->next;
+        }
+        cout << "Patient with ID " << patientID << " not found." << endl;
     }
-    void callNextPatient() {
-        cout << "Call Next Patient is not yet implemented";
-        return;
-    }
-    void viewWaitingQueue() {
-        cout << "View Waiting Queue is not yet implemented";
-        return;
-    }
-    void checkQueueStatus() {
-        cout << "Check Queue Status is not yet implemented";
-        return;
-    }
+
 };
 
 int main() {
